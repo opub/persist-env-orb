@@ -8,7 +8,8 @@ usage:
     env: opub/persist-env-orb@1.0.0
   jobs:
     build:
-      machine: true
+      docker:
+        - image: cimg/base:stable
       steps:
         - env/set:
             name: FOO

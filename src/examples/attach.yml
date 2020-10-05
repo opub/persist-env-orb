@@ -7,7 +7,8 @@ usage:
     env: opub/persist-env-orb@1.0.0
   jobs:
     build:
-      machine: true
+      docker:
+        - image: cimg/base:stable
       steps:
         - env/set:
             name: FOO
@@ -18,7 +19,8 @@ usage:
         - run: echo "Set variables FOO=$FOO and BAZ=$BAZ"
         - env/persist
     deploy:
-      machine: true
+      docker:
+        - image: cimg/base:stable
       steps:
         - env/attach
         - run: echo "Use variables FOO=$FOO and BAZ=$BAZ"
