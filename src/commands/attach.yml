@@ -1,0 +1,22 @@
+description: >
+  Attach environment variables from workspace.
+
+parameters:
+  folder:
+    type: string
+    default: "/tmp/"
+    description: "Folder to persist environment variable file to."
+  file:
+    type: string
+    default: ".environment-variables"
+    description: "Name of file within folder to persist environment variables to."
+
+steps:
+  - attach_workspace:
+      at: << parameters.folder >>
+  - run:
+      name: Verify environment variable file exists
+      command: echo "" >> << parameters.folder >><< parameters.file >>
+  - run:
+      name: Load environment variables
+      command: cat << parameters.folder >><< parameters.file >> >> $BASH_ENV

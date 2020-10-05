@@ -1,0 +1,19 @@
+description: >
+  Call the "set" command for each environment variable you want to persist.
+  This has the side effect of setting it in the current context as well.
+
+usage:
+  version: 2.1
+  orbs:
+    env: opub/persist-env-orb@1.0.0
+  jobs:
+    build:
+      machine: true
+      steps:
+        - env/set:
+            name: FOO
+            value: BAR
+        - env/set:
+            name: BAZ
+            value: QUX
+        - run: echo "Set variables FOO=$FOO and BAZ=$BAZ"

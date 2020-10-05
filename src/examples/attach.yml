@@ -1,0 +1,31 @@
+description: >
+  The "attach" command will reload the persisted variables into the environment that were created with "set" and "persist".
+
+usage:
+  version: 2.1
+  orbs:
+    env: opub/persist-env-orb@1.0.0
+  jobs:
+    build:
+      machine: true
+      steps:
+        - env/set:
+            name: FOO
+            value: BAR
+        - env/set:
+            name: BAZ
+            value: QUX
+        - run: echo "Set variables FOO=$FOO and BAZ=$BAZ"
+        - env/persist
+    deploy:
+      machine: true
+      steps:
+        - env/attach
+        - run: echo "Use variables FOO=$FOO and BAZ=$BAZ"
+  workflows:
+    build-and-deploy:
+      jobs:
+        - build
+        - deploy:
+            requires:
+              - build

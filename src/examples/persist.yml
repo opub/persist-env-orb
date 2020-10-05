@@ -1,0 +1,19 @@
+description: >
+  The "persist" command saves all "set" variables to the workspace for future jobs to "attach".
+
+usage:
+  version: 2.1
+  orbs:
+    env: opub/persist-env-orb@1.0.0
+  jobs:
+    build:
+      machine: true
+      steps:
+        - env/set:
+            name: FOO
+            value: BAR
+        - env/set:
+            name: BAZ
+            value: QUX
+        - run: echo "Set variables FOO=$FOO and BAZ=$BAZ"
+        - env/persist

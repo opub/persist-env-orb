@@ -1,0 +1,27 @@
+description: >
+  Set environment variable to later persist in workspace.
+
+parameters:
+  folder:
+    type: string
+    default: "/tmp/"
+    description: "Folder to persist environment variable file to."
+  file:
+    type: string
+    default: ".environment-variables"
+    description: "Name of file within folder to persist environment variables to."
+  name:
+    type: string
+    description: The name of the environment variable
+  value:
+    type: string
+    description: The value of the environment variable
+
+steps:
+  - run:
+      name: Set environment variable
+      command: |
+        for file in << parameters.folder >><< parameters.file >> $BASH_ENV
+        do
+          echo "export << parameters.name >>=\"<< parameters.value >>\"" >> $file
+        done
