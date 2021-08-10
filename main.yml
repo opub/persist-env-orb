@@ -1,0 +1,154 @@
+version: 2.1
+orb-version: 1.0.0
+
+description: This orb persists environment variables across executors.
+
+examples:
+  report-command:
+    description: Report the status of a job to MS Teams
+    usage:
+      version: 2.1
+      orbs:
+        persist-env: opub/persist-env-orb@1.0.0
+      jobs:
+        setup:
+          docker:
+            - image: cimg/base:stable
+          steps:
+            - env-set:
+              varname: FOO
+              varvalue: BAR
+            - env-persist
+        mac-usage:
+          macos:
+            xcode: 11.6.0
+          steps:
+            - env-attach
+            - run:
+                command: echo "FOO = $FOO"
+        win-usage:
+          executor:
+            name: win/default
+          steps:
+            - env-attach-win
+            - run:
+                command: echo "FOO = $FOO"
+
+commands:
+  env-set:
+    parameters:
+      folder:
+        type: string
+        default: ".workspace/"
+        description: "Folder to persist environment variable file to."
+      file:
+        type: string
+        default: ".environment"
+        description: "Name of file within folder to persist environment variables to."
+      varname:
+        type: string
+        description: The name of the environment variable
+      varvalue:
+        type: string
+        description: The value of the environment variable
+    steps:
+      - run:
+          name: Set environment variable
+          command: |
+            mkdir -p << parameters.folder >>
+            for file in << parameters.folder >><< parameters.file >> $BASH_ENV
+            do
+              echo "export << parameters.varname >>=\"<< parameters.varvalue >>\"" >> $file
+            done
+
+  env-persist:
+    parameters:
+      folder:
+        type: string
+        default: ".workspace/"
+        description: "Folder to persist environment variable file to."
+      file:
+        type: string
+        default: ".environment"
+        description: "Name of file within folder to persist environment variables to."
+    steps:
+      - run:
+          name: Verify environment variable file exists
+          command: |
+            mkdir -p << parameters.folder >>
+            echo "" >> << parameters.folder >><< parameters.file >>
+      - persist_to_workspace:
+          root: << parameters.folder >>
+          paths:
+            - << parameters.file >>
+
+  env-attach:
+    parameters:
+      folder:
+        type: string
+        default: ".workspace/"
+        description: "Folder to persist environment variable file to."
+      file:
+        type: string
+        default: ".environment"
+        description: "Name of file within folder to persist environment variables to."
+    steps:
+      - run:
+          name: Make workspace folder
+          command: |
+            mkdir -p << parameters.folder >>
+      - attach_workspace:
+          at: << parameters.folder >>
+      - run:
+          name: Verify environment variable file exists
+          command: echo "" >> << parameters.folder >><< parameters.file >>
+      - run:
+          name: Load environment variables
+          command: |
+            cat << parameters.folder >><< parameters.file >> >> $BASH_ENV
+      - run:
+          name: Verify environment variables
+          command: printenv | sort
+
+  env-attach-win:
+    parameters:
+      folder:
+        type: string
+        default: ".workspace/"
+        description: "Folder to persist environment variable file to."
+      file:
+        type: string
+        default: ".environment"
+        description: "Name of file within folder to persist environment variables to."
+    steps:
+      - run:
+          name: Make workspace folder
+          shell: bash.exe
+          command: |
+            mkdir -p << parameters.folder >>
+      - attach_workspace:
+          at: << parameters.folder >>
+      - run:
+          name: Load environment variables into bash
+          shell: bash.exe
+          command: |
+            source << parameters.folder >><< parameters.file >>
+            cat << parameters.folder >><< parameters.file >> >> $BASH_ENV
+      - run:
+          name: Load environment variables into powershell
+          shell: powershell.exe
+          command: |
+            foreach($line in Get-Content << parameters.folder >><< parameters.file >>) {
+              if (-not ([string]::IsNullOrEmpty($line.trim()))) {
+                $parts=($line).Replace("export ","").Split("=")
+                setx $parts[0].trim() $parts[1].trim() /m
+              }
+            }
+      - run:
+          name: Verify bash variables
+          shell: bash.exe
+          command: printenv | sort
+      - run:
+          name: Verify powershell variables
+          shell: powershell.exe
+          command: gci env:* | sort-object name
