@@ -4,8 +4,8 @@ orb-version: 1.0.0
 description: This orb persists environment variables across executors.
 
 examples:
-  report-command:
-    description: Report the status of a job to MS Teams
+  env-persist-command:
+    description: Persist environment variables for later use
     usage:
       version: 2.1
       orbs:
@@ -16,9 +16,16 @@ examples:
             - image: cimg/base:stable
           steps:
             - env-set:
-              varname: FOO
-              varvalue: BAR
+                varname: FOO
+                varvalue: BAR
             - env-persist
+  env-attach-command:
+    description: Attach to previously persisted environment variables
+    usage:
+      version: 2.1
+      orbs:
+        persist-env: opub/persist-env-orb@1.0.0
+      jobs:
         mac-usage:
           macos:
             xcode: 11.6.0
